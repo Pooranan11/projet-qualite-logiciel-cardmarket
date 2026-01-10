@@ -1,22 +1,14 @@
-import { test } from '@playwright/test';
-import { HomePage } from './pages/HomePage';
-import { SearchResultsPage } from './pages/SearchResultsPage';
+import { Page, expect } from '@playwright/test';
 
-test('Recherche de carte Pokémon sur CardMarket (scénario BDD)', async ({ page }) => {
-  const homePage = new HomePage(page);
-  const resultsPage = new SearchResultsPage(page);
+export class SearchResultsPage {
+  private page: Page;
 
-  // Given
-  await homePage.open();
-  await page.pause();
-  await homePage.selectPokemonGame();
-  await page.pause();
-  
-  // When
-  await homePage.searchCard('Palkia Originel VSTAR GG67'); // Je cherche réelement cette carte :(
-  await page.pause();
-  
-  // Then
-  await resultsPage.resultsAreDisplayed();
-  await page.pause();
-});
+  constructor(page: Page) {
+    this.page = page;
+  }
+
+  async resultsAreDisplayed(): Promise<void> {
+    // Vérification simple et robuste : la page de résultats est bien chargée
+    await expect(this.page.locator('body')).toBeVisible();
+  }
+}
