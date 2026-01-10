@@ -16,21 +16,21 @@ test("Feature: Filtrer et trier les résultats - Scenario: filtre + tri prix cro
   // When: filtre "Expansion" = Lost Origin (valide via Search)
   await results.applyExpansion("Lost Origin");
 
-  // Then: l'UI montre bien l'expansion sélectionnée
+  // Then: l'UI reste sur expansion
   await results.expectExpansionSelected("Lost Origin");
 
-  // When: tri "Price (cheapest first)" (valide via Search)
+  // When: tri "Price (cheapest first)"
   await results.sortByAny([
     "Price (cheapest first)",
     "Prix (le moins cher d'abord)",
   ]);
 
-  // Then: l'UI montre bien le tri choisi
+  // Then: l'UI montre le tri choisi ici c'est cheapest first
   await results.expectSortSelected([
     "Price (cheapest first)",
     "Prix (le moins cher d'abord)",
   ]);
 
-  // And: les premiers prix sont bien croissants
+  // And: on devrait avoir les 5 prix
   await results.expectPricesAscending(5);
 });

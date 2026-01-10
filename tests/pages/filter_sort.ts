@@ -36,7 +36,7 @@ export class SearchResultsPage {
   }
 
 
-  // Anti-bot / human verification
+  // Anti-bot / human verification, + de robustesse
   
   private async skipIfHumanVerification(): Promise<void> {
     const body = this.page.locator("body");
@@ -98,12 +98,12 @@ export class SearchResultsPage {
       }, { timeout: 20000 })
       .toBeTruthy()
       .catch(async () => {
-        // fallback: si résultat identique, on garantit juste l'état stable
+        // fallback: si résultat identique, cela vient garantir que l'état est stable
         await this.waitForResultsLoaded();
       });
   }
 
-  // ------- Expansion (si tu l'utilises dans le spec) -------
+  // ------- Expansion (case édition)
   async expectExpansionSelected(value: string): Promise<void> {
     await this.waitForResultsLoaded();
     await expect(this.expansionSelect.locator("option:checked")).toHaveText(
