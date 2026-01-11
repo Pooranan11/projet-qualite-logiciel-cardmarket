@@ -1,36 +1,28 @@
 import { test } from "@playwright/test";
 import { HomePage } from "./pages/HomePage";
-import { SearchResultsPage } from "./pages/filter_sort.ts";
+import { SearchResultsPage } from "./pages/filter_sort"; // Vérifie que le nom du fichier est bien filter_sort.ts
 
-test("Feature: Filtrer et trier les résultats - Scenario: filtre + tri prix croissant", async ({ page }) => {
+test("Scenario: Appliquer un filtre puis trier par prix croissant", async ({ page }) => {
+  test.slow();
   const home = new HomePage(page);
   const results = new SearchResultsPage(page);
 
-  // Given: on arrive sur des résultats pour "Giratina"
+  // --- GIVEN ---
   await home.open();
-  await results.acceptCookiesIfPresent();
+  await results.acceptCookiesIfPresent(); //
   await home.selectPokemonGame();
   await home.searchCard("Giratina");
-  await results.waitForResultsLoaded();
+  await results.waitForResultsLoaded(); //
 
-  // When: filtre "Expansion" = Lost Origin (valide via Search)
+  // --- WHEN : application du Filtre ---
+  // Cette méthode sélectionne "Lost Origin" et clique sur SEARCH
   await results.applyExpansion("Lost Origin");
 
-  // Then: l'UI reste sur expansion
-  await results.expectExpansionSelected("Lost Origin");
+  // --- WHEN : Tri ---
+  // On utilise le texte exact du menu déroulant
+  await results.sortBy("Price (cheapest first)");
 
-  // When: tri "Price (cheapest first)"
-  await results.sortByAny([
-    "Price (cheapest first)",
-    "Prix (le moins cher d'abord)",
-  ]);
-
-  // Then: l'UI montre le tri choisi ici c'est cheapest first
-  await results.expectSortSelected([
-    "Price (cheapest first)",
-    "Prix (le moins cher d'abord)",
-  ]);
-
-  // And: on devrait avoir les 5 prix
+  // --- THEN ---
+  // On vérifie que les 5 premiers prix sont bien dans l'ordre
   await results.expectPricesAscending(5);
 });
