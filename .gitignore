@@ -8,3 +8,4 @@ node_modules/
 /playwright/.auth/
 _backup_local/
 _backup_local/
+.github/copilot-instructions.md
