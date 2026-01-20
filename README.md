@@ -265,7 +265,7 @@ Les éléments suivants sont requis pour exécuter le projet :
 
 ### 7.2 Installation des dépendances
 
-Après avoir cloné le dépôt du projet, installer les dépendances avec la commande suivante :
+Après avoir cloné le dépôt du projet, restez à la racine du projet, installer les dépendances avec la commande suivante :
 
 ```bash
 npm install
@@ -277,7 +277,8 @@ npx playwright install
 ```
 ### 7.3 Exécution des tests
 
-Lancer l’ensemble des tests automatisés :
+Remarque importante :
+Les tests étant exécutés contre un site tiers en production, il est recommandé d’éviter le lancement simultané de l’ensemble des scénarios. Une exécution trop intensive peut être interprétée comme un comportement automatisé anormal et déclencher des mécanismes de protection du site (anti-bot), entraînant le blocage temporaire des tests.
 
 ```bash
 npx playwright test
@@ -285,7 +286,7 @@ npx playwright test
 Lancer un test spécifique
 ```bash
 
-npx playwright test tests/filter_sort.spec.ts 
+npx playwright test tests/filter_sort  --project=chromium
 ```
 Liter les tests détéctés par Playwright
 

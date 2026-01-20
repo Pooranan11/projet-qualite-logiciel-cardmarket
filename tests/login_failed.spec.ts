@@ -22,7 +22,7 @@ test('Échec de connexion avec identifiants invalides', async ({ page }) => {
   await page.pause();
 });
 
-// Le bouton "Log in" reste aria-disabled en automatisation à cause
+
 // des validations JavaScript dépendantes d'événements utilisateur.
 // La soumission via la touche Entrée permet de tester le comportement
 // fonctionnel réel sans forcer l'état interne du bouton.
