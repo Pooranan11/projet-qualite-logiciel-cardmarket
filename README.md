@@ -1,7 +1,5 @@
 # Projet de tests automatisés end-to-end avec Playwright – CardMarket
 
-## Projet de tests automatisés end-to-end avec Playwright – CardMarket
-
 **Auteurs :**
 - Heddy Mortada
 - Christophe Pays
@@ -357,10 +355,12 @@ et sortent du périmètre pédagogique fixé pour ce projet.
 
 ## 10. Authentification : périmètre et mock
 
-L’authentification réelle dépend d’un backend externe hors périmètre du projet.  
+L’authentification réelle dépend d’un backend externe hors périmètre du projet.
 Afin de respecter les bonnes pratiques de sécurité, aucun compte réel ni identifiant sensible n’est utilisé dans les tests automatisés.
 
-La connexion réussie est donc simulée pour tester le parcours utilisateur post-authentification, tandis que l’échec de connexion est testé de manière réelle afin de valider le comportement de l’interface.
+Dans le cadre de tests end-to-end, le mockage complet des mécanismes d’authentification est généralement déconseillé lorsque l’objectif est de valider des parcours utilisateurs réalistes, car il peut masquer des problèmes d’intégration réels et réduire la valeur du test de bout en bout. En effet, l’usage de mocks dans des tests E2E va à l’encontre du principe consistant à tester l’application dans des conditions aussi proches que possible de la production, comme le soulignent les bonnes pratiques en test logiciel et en intégration continue.
+
+Dans ce projet, la connexion réussie est donc simulée uniquement afin de permettre la validation du parcours utilisateur post-authentification, tandis que l’échec de connexion est testé de manière réelle afin de vérifier le comportement de l’interface. Ce compromis permet de concilier réalisme fonctionnel, sécurité et contraintes liées à un site tiers.
 
 
 ## 11. Difficultés rencontrées
@@ -376,6 +376,6 @@ Les principales difficultés rencontrées concernent la nature du site testé (s
 
 Ce projet met en œuvre une suite de tests automatisés end-to-end avec Playwright sur le site CardMarket, en ciblant des parcours utilisateurs représentatifs accessibles sans compte réel.
 
-L’architecture en Page Object Model, le choix de sélecteurs robustes et les stratégies de synchronisation permettent d’obtenir des tests maintenables et réalistes, malgré les contraintes d’un site tiers en production.
+L’architecture en Page Object Model, le choix de sélecteurs robustes et les stratégies de synchronisation permettent d’obtenir des tests maintenables et réalistes, malgré les contraintes inhérentes à un site tiers en production.
 
-Les scénarios couvrent la recherche, le filtrage, le tri et l’authentification (partiellement mockée), tout en respectant un cadre pédagogique et des bonnes pratiques de sécurité.
+Les scénarios couvrent la recherche, le filtrage, le tri et l’authentification (partiellement mockée), en se concentrant prioritairement sur les parcours à plus forte valeur fonctionnelle pour l’utilisateur. Cette approche, basée sur la maîtrise du périmètre, la prise en compte des risques et des contraintes réelles, s’inscrit dans une démarche de qualité logicielle pragmatique et conforme aux objectifs pédagogiques du projet.
