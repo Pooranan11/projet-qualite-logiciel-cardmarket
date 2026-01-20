@@ -4,61 +4,130 @@ export class FilterEditionResultsPage {
   readonly page: Page;
   readonly editionSelect: Locator;
   readonly searchBtn: Locator;
-  readonly productLinks: Locator;
+  readonly resultContainer: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    // Ciblage par attribut 'name' pour le menu déroulant
     this.editionSelect = page.locator('select[name="idExpansion"]');
-    
-    // Ciblage spécifique de l'INPUT de type submit identifié via l'inspecteur
-    // Note : Cardmarket utilise un input et non un bouton classique ici.
     this.searchBtn = page.locator('input[type="submit"][value="Search"].btn-primary');
-
-    // Ciblage des liens produits pour extraire le texte (ex: "Giratina V (LOR 130)")
-    this.productLinks = page.locator('.table-body .row a[href*="/Products/Singles/"]');
+    this.resultContainer = page.locator('main');
   }
 
-  /**
-   * Synchronisation : Attend que la table des résultats soit injectée dans le DOM.
-   */
+  private async handleCloudflare(): Promise<void> {
+    // Vérifier si un captcha Cloudflare est visible
+    const cloudflareChallenge = this.page.locator('iframe[src*="challenges.cloudflare.com"]').first();
+    const isChallengeVisible = await cloudflareChallenge.isVisible().catch(() => false);
+
+    if (isChallengeVisible) {
+      console.log("[INFO] Captcha Cloudflare détecté. Attente de la page principale...");
+      // Attendre que le contenu principal soit enfin visible (signe de succès)
+      await this.resultContainer.waitFor({ state: 'visible', timeout: 60000 });
+      console.log("[INFO] Captcha résolu ou contourné.");
+    }
+  }
+
   async waitForResultsPage(): Promise<void> {
-    await expect(this.page.locator('.table-body')).toBeVisible({ timeout: 15000 });
+    await this.page.waitForLoadState("domcontentloaded");
+
+    // Attendre que Cloudflare disparaisse si présent
+    await this.handleCloudflare();
+
+    await expect(this.page).toHaveURL(/Products\/Search/);
+    await this.editionSelect.waitFor({ state: "visible", timeout: 15000 });
   }
 
-  /**
-   * Gère l'interaction de filtrage et la validation du rafraîchissement.
-   */
+  private async getMarker(): Promise<string> {
+    // Marqueur robuste : URL + premier lien visible (ou fallback à vide)
+    const url = this.page.url();
+    try {
+      const firstLink = this.page.locator('main a[href*="/Products/Single"]').first();
+      const href = await firstLink.getAttribute('href');
+      return `${url}|${href}`;
+    } catch {
+      // Fallback : juste l'URL si aucun lien n'existe encore
+      return url;
+    }
+  }
+
+  private async submitAndWaitForUpdate(beforeMarker: string): Promise<void> {
+    // Soumettre le filtre
+    try {
+      await this.searchBtn.click({ timeout: 2000 });
+    } catch {
+      await this.editionSelect.press('Enter');
+    }
+
+    // Attendre le changement d'URL avec idExpansion
+    await this.page.waitForURL(/idExpansion=\d+/, { timeout: 15000 });
+
+    // Gestion du captcha post-navigation
+    await this.handleCloudflare();
+
+    // Attendre que les résultats se rechargent (poll sur le marqueur)
+    await expect.poll(
+      async () => {
+        const afterMarker = await this.getMarker();
+        return afterMarker !== beforeMarker ? 'changed' : 'same';
+      },
+      { timeout: 15000, intervals: [500] }
+    ).toBe('changed');
+
+    // Stabilisation du DOM
+    await this.page.waitForLoadState("networkidle");
+  }
+
   async filterByEdition(label: string): Promise<void> {
-    // Sélection de l'option souhaitée
-    await this.editionSelect.selectOption({ label: label });
-    
-    // Pause nécessaire pour laisser les scripts de Cardmarket valider le choix
-    await this.page.waitForTimeout(1000);
+    await this.editionSelect.waitFor({ state: "visible" });
 
-    // Clic forcé pour contourner d'éventuels overlays (ex: menus collants)
-    await this.searchBtn.click({ force: true });
+    // Petit délai pour simuler la réflexion humaine (1-2 secondes)
+    await this.page.waitForTimeout(1000 + Math.random() * 1000);
 
-    // Validation technique : l'URL doit porter le flag de l'expansion sélectionnée
-    await expect(this.page).toHaveURL(/idExpansion=/, { timeout: 15000 });
+    // Enregistrer le marqueur avant le changement
+    const beforeMarker = await this.getMarker();
+
+    // Cliquer sur le select pour simuler un focus humain
+    await this.editionSelect.click();
     
-    // On attend que le réseau soit calme pour garantir la mise à jour des données
-    await this.page.waitForLoadState('networkidle');
+    // Petit délai avant de sélectionner
+    await this.page.waitForTimeout(200);
+
+    // Sélectionner l'option
+    await this.editionSelect.selectOption({ label });
+
+    // Petit délai avant de soumettre
+    await this.page.waitForTimeout(500);
+
+    // Soumettre et attendre la mise à jour
+    await this.submitAndWaitForUpdate(beforeMarker);
   }
 
-  /**
-   * Vérifie la conformité des résultats affichés.
-   */
   async expectResultsToContainCode(code: string, n: number): Promise<void> {
-    // Attente du premier lien pour s'assurer que la liste n'est plus vide
-    await this.productLinks.first().waitFor({ state: 'visible' });
+    await this.resultContainer.waitFor({ state: 'visible', timeout: 10000 });
 
-    const take = Math.min(n, await this.productLinks.count());
+    const productLinks = this.page.locator('main a[href*="/Products/Single"]');
 
+    // Attendre au moins un résultat
+    await expect(productLinks.first()).toBeVisible({ timeout: 10000 });
+
+    const count = await productLinks.count();
+    console.log(`[DEBUG] Produits trouvés : ${count}`);
+
+    const take = Math.min(n, count);
     for (let i = 0; i < take; i++) {
-      const text = await this.productLinks.nth(i).innerText();
-      // On valide que le code d'édition (ex: LOR) est présent entre parenthèses
-      expect(text).toContain(`(${code}`);
+      const link = productLinks.nth(i);
+      const href = await link.getAttribute('href') || '';
+      const text = await link.textContent() || '';
+
+      console.log(`[DEBUG] Lien ${i + 1}: ${href} | Texte: ${text}`);
+
+      // Normaliser pour comparaison (minuscules, tirets supprimés)
+      const normalizedHref = href.toLowerCase().replace(/-/g, '');
+      const normalizedCode = code.toLowerCase().replace(/-/g, '');
+
+      expect(
+        normalizedHref,
+        `Lien ${i + 1} devrait contenir le code "${code}"`
+      ).toContain(normalizedCode);
     }
   }
 }

@@ -152,17 +152,31 @@ L’arborescence présentée ci-dessous illustre l’organisation générale du 
 
 ```plaintext
 .
-├── tests/
-│   ├── *.spec.ts          # Scénarios de tests (Playwright specs)
-│   └── pages/             # Page Objects (logique des pages)
-│       ├── HomePage.ts
-│       ├── SearchResultsPage.ts
-│       ├── filter_sort.ts
-│       ├── filter_expansion.ts
-│       └── LoginPage.ts
-├── playwright.config.ts   # Configuration Playwright
+├── .github
+│   └── workflows
+│       └── playwright.yml
+├── .gitignore
 ├── package.json
-└── README.md
+├── package-lock.json
+├── playwright.config.ts
+├── README.md
+└── tests
+    ├── features
+    │   ├── filter_edition.feature
+    │   ├── filter_sort.feature
+    │   ├── login.feature
+    │   └── search_card.feature
+    ├── filter_expansion.spec.ts
+    ├── filter_sort.spec.ts
+    ├── login_failed.spec.ts
+    ├── login_mocked.spec.ts
+    ├── pages
+    │   ├── filter_expansion.ts
+    │   ├── filter_sort.ts
+    │   ├── HomePage.ts
+    │   ├── LoginPage.ts
+    │   └── SearchResultsPage.ts
+    └── search_card.spec.ts
 
 ---
 ```
