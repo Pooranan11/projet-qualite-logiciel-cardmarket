@@ -1,5 +1,11 @@
 # Projet de tests automatisés end-to-end avec Playwright – CardMarket
 
+## Projet de tests automatisés end-to-end avec Playwright – CardMarket
+
+**Auteurs :**
+- Heddy Mortada
+- Christophe Pays
+- Pooranan Vytheswaran
 
 ## Sommaire
 1. [Introduction](#1-introduction)
@@ -51,6 +57,7 @@ Les technologies et outils utilisés dans ce projet sont :
 - **TypeScript** : typage et maintenabilité du code
 - **Node.js / npm** : gestion des dépendances
 - **Page Object Model (POM)** : séparation des pages et des scénarios de test
+- **Gherkin (BDD)** : description des scénarios métier sous forme Given / When / Then
 
 ## 5. Scénarios de tests automatisés
 
@@ -147,6 +154,17 @@ Le projet est organisé selon le principe du **Page Object Model (POM)**, permet
 
 L’arborescence présentée ci-dessous illustre l’organisation générale du projet et pourra évoluer lors de l’intégration finale des différentes branches.
 
+### Rôle des fichiers `.feature` et `.spec.ts`
+
+Les fichiers `.feature` présents dans le dossier `tests/features` décrivent les scénarios
+métier de manière lisible et indépendante de l’implémentation technique.
+
+Les fichiers `.spec.ts` implémentent ces scénarios sous forme de tests Playwright
+exécutables. Ils orchestrent les étapes Given / When / Then en s’appuyant sur les Page
+Objects, sans dupliquer la logique métier décrite dans les fichiers `.feature`.
+
+Cette séparation permet de distinguer clairement l’intention fonctionnelle
+(ce qui est testé) de son implémentation technique (comment c’est testé).
 
 ### 6.1 Arborescence principale
 
@@ -325,6 +343,17 @@ Les principales contraintes prises en compte sont :
 - **Application des filtres** : sur CardMarket, les filtres/tri ne sont appliqués qu’après validation via le bouton **Search** ; les tests reproduisent ce comportement.
 - **Anti-bot / Cloudflare** : le site peut déclencher un challenge humain. Lorsque cela arrive, les tests ne peuvent pas le contourner ; ce comportement est considéré comme hors périmètre.
 
+### Hors périmètre du projet
+
+Le projet se concentre exclusivement sur des tests automatisés end-to-end côté utilisateur.
+Les aspects suivants sont volontairement hors périmètre :
+
+- Tests de performance et de charge
+- Tests de sécurité backend (injection, authentification réelle, API internes)
+- Tests unitaires et d’intégration côté serveur
+
+Ces éléments ne sont pas accessibles ni contrôlables dans le cadre d’un site tiers en production
+et sortent du périmètre pédagogique fixé pour ce projet.
 
 ## 10. Authentification : périmètre et mock
 
